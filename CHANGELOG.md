@@ -1,0 +1,18 @@
+# Changelog
+
+## 0.1.1 - 2026-05-05
+
+- Fix: when a post had no `summary` set, the fallback to `doc.data["excerpt"]`
+  serialized the entire `Jekyll::Excerpt` Ruby object graph into the
+  frontmatter. The fallback now coerces the excerpt to plain text and strips
+  HTML tags.
+- Add an RSpec test suite (unit + integration against a fixture Jekyll site).
+
+## 0.1.0
+
+- Initial release.
+- Generates a `.md` sibling for every document in the configured collections.
+- Mirrors Markdown-sourced `site.pages` (e.g. `index.md`, `about.md`) too.
+  Disable with `pages: false`.
+- Minimal YAML frontmatter (title, date, url, summary, tags, category, author).
+- Per-document opt-out via `markdown_output: false` in frontmatter.

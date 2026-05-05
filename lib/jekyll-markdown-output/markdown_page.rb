@@ -1,0 +1,136 @@
+# frozen_string_literal: true
+
+module Jekyll
+  module MarkdownOutput
+    # Builds the Markdown bytes for a single source document.
+    # Not a Jekyll::Page on purpose: we write directly to _site/
+    # in a post_write hook so the converter and layout pipeline
+    # cannot touch the output.
+    class MarkdownPage
+      DEFAULT_FRONTMATTER_KEYS = %w[title date url summary tags category author].freeze
+
+      attr_reader :doc, :site, :options
+
+      def initialize(site, doc, options = {})
+        @site = site
+        @doc = doc
+        @options = options
+      end
+
+      # Absolute path on disk where this file should be written.
+      def destination
+        File.join(@site.dest, relative_destination)
+      end
+
+      # Path relative to the site root, e.g. "/foo.md".
+      def relative_destination
+        ext = @options.fetch("extension", ".md")
+        url = @doc.url
+        if url.end_with?("/")
+          File.join(url, "index#{ext}")
+        else
+          dir = File.dirname(url)
+          base = File.basename(url, ".*")
+          File.join(dir, "#{base}#{ext}")
+        end
+      end
+
+      def to_s
+        parts = []
+        fm = build_frontmatter
+        parts << "---\n#{fm}---" unless fm.empty?
+        if @options.fetch("include_title_heading", true) && @doc.data["title"]
+          parts << "# #{@doc.data["title"]}"
+        end
+        parts << rendered_source.to_s.strip
+        "#{parts.join("\n\n")}\n"
+      end
+
+      private
+
+      def build_frontmatter
+        keys = @options["frontmatter_keys"] || DEFAULT_FRONTMATTER_KEYS
+        url = @doc.url
+        site_url = @site.config["url"]
+        url = "#{site_url}#{url}" if site_url && !url.start_with?("http")
+
+        candidates = {
+          "title"    => @doc.data["title"],
+          "date"     => format_date(@doc.data["date"]),
+          "url"      => url,
+          "summary"  => extract_summary,
+          "tags"     => Array(@doc.data["tags"]).reject { |t| t.to_s.empty? },
+          "category" => @doc.data["category"],
+          "author"   => @doc.data["author"] || @site.config["author"],
+        }
+
+        picked = keys.each_with_object({}) do |key, h|
+          v = candidates[key]
+          next if v.nil?
+          next if v.respond_to?(:empty?) && v.empty?
+          h[key] = v
+        end
+
+        return "" if picked.empty?
+
+        YAML.dump(picked).sub(/\A---\s*\n/, "")
+      end
+
+      def format_date(date)
+        return nil if date.nil?
+        date.respond_to?(:iso8601) ? date.iso8601 : date.to_s
+      end
+
+      # `summary` falls back to the document's excerpt when not set in
+      # frontmatter. Excerpt may be a Jekyll::Excerpt object (whose YAML dump
+      # is a huge object graph) or already a string. Coerce to plain text and
+      # strip tags so it's safe to embed in YAML frontmatter.
+      def extract_summary
+        s = @doc.data["summary"]
+        return s.strip if s.is_a?(String) && !s.strip.empty?
+
+        excerpt = @doc.data["excerpt"]
+        return nil if excerpt.nil?
+        text = excerpt.respond_to?(:content) ? excerpt.content : excerpt
+        text = text.to_s.gsub(/<[^>]+>/, "").strip
+        text.empty? ? nil : text
+      end
+
+      # Resolve to an absolute path on disk. Document#path is already
+      # absolute; Page#path is relative to the site source.
+      def source_path
+        File.expand_path(@doc.path.to_s, @site.source)
+      end
+
+      # Re-read the source body from disk. By the time post_write fires,
+      # Jekyll has overwritten doc.content with the converted HTML.
+      # Force UTF-8 because some build environments (e.g. Cloudflare Pages)
+      # default to US-ASCII, which breaks regex splits on non-ASCII bytes.
+      def source_body
+        raw = File.read(source_path, encoding: "UTF-8")
+        parts = raw.split(/^---\s*$\n/, 3)
+        parts.length >= 3 ? parts[2] : raw
+      end
+
+      def rendered_source
+        body = source_body
+        # Skip Liquid only when the document explicitly opted out. We do not
+        # rely on Document#render_with_liquid? here because Jekyll mutates
+        # that flag to false after the main render pass, and our post_write
+        # hook runs strictly after that.
+        return body if @doc.data["render_with_liquid"] == false
+
+        info = {
+          filters:   [Jekyll::Filters],
+          registers: { site: @site, page: @doc.to_liquid },
+        }
+        template = @site.liquid_renderer.file(source_path).parse(body)
+        template.render!(@site.site_payload.merge("page" => @doc.to_liquid), info)
+      rescue StandardError => e
+        rel = @doc.respond_to?(:relative_path) ? @doc.relative_path : @doc.path
+        Jekyll.logger.warn("MarkdownOutput:", "render failed for #{rel}: #{e.message}")
+        source_body
+      end
+    end
+  end
+end

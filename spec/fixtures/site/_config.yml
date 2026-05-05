@@ -1,0 +1,10 @@
+title: Fixture Site
+url: https://example.com
+author: Test Author
+
+plugins:
+  - jekyll-markdown-output
+
+# Tests override this map per example.
+markdown_output:
+  enabled: true

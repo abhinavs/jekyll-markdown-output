@@ -9,6 +9,7 @@ module Jekyll
       "collections"           => ["posts"],
       "pages"                 => true,
       "page_extensions"       => [".md", ".markdown"],
+      "html_to_markdown"      => false,
       "extension"             => ".md",
       "include_title_heading" => true,
       "frontmatter_keys"      => MarkdownPage::DEFAULT_FRONTMATTER_KEYS,
@@ -35,6 +36,7 @@ module Jekyll
 
       if config["pages"]
         exts = Array(config["page_extensions"]).map(&:downcase)
+        exts.concat(%w[.html .htm]) if config["html_to_markdown"]
         site.pages.each do |page|
           next unless exts.include?(File.extname(page.path).downcase)
           written += 1 if write_one(site, page, config)

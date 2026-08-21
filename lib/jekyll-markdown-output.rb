@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "jekyll"
+require "reverse_markdown"
 require "yaml"
 
 require_relative "jekyll-markdown-output/version"

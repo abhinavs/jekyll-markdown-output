@@ -9,6 +9,7 @@ RSpec.describe Jekyll::MarkdownOutput do
       expect(config["collections"]).to eq(["posts"])
       expect(config["pages"]).to eq(true)
       expect(config["page_extensions"]).to eq([".md", ".markdown"])
+      expect(config["html_to_markdown"]).to eq(false)
       expect(config["extension"]).to eq(".md")
       expect(config["include_title_heading"]).to eq(true)
     end

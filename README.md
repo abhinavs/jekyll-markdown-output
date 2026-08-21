@@ -7,7 +7,9 @@ For a post rendered at `/foo`, this plugin also writes `/foo.md` containing:
 - a small YAML frontmatter block (title, date, url, summary, tags, category, author)
 - the post's source Markdown with Liquid rendered
 
-No HTML conversion. No layout chrome. No nav, footer, theme toggles, or analytics scripts.
+By default there is no HTML conversion. An opt-in can also convert the source
+body of `.html` and `.htm` pages to Markdown. Layout chrome, nav, footer, theme
+toggles, and analytics scripts are never included.
 
 ### Before / after
 
@@ -53,6 +55,7 @@ markdown_output:
   collections: [posts]               # which collections to mirror
   pages: true                        # also mirror site.pages
   page_extensions: [.md, .markdown]  # which page sources count as Markdown
+  html_to_markdown: false            # also convert .html/.htm page sources
   extension: .md                     # output extension
   include_title_heading: true        # prepend "# Title" to body
   frontmatter_keys:                  # which fields to include
@@ -66,8 +69,15 @@ markdown_output:
 ```
 
 `pages: true` (the default) emits `.md` for top-level Markdown files such
-as `index.md`, `about.md`, `now.md`. HTML-sourced pages are skipped: if
-you want a `.md` twin for a page, write it in Markdown.
+as `index.md`, `about.md`, and `now.md`. HTML-sourced pages remain skipped by
+default. Set `html_to_markdown: true` to include `.html` and `.htm` page sources;
+they are included in addition to the extensions in `page_extensions`.
+
+HTML conversion runs on the page's source body after frontmatter removal and
+Liquid rendering, but before the generated frontmatter and optional title
+heading are added. It does not convert the rendered layout, so theme chrome is
+not pulled into the Markdown output. Conversion is necessarily lossy for HTML
+that has no Markdown equivalent.
 
 ### Per-document opt-out
 
@@ -111,7 +121,7 @@ For years the terminal was the place you only opened to run a build...
 
 ## How it works
 
-The plugin registers a `:site, :post_write` hook that runs after Jekyll has finished its main build. For each document in the configured collections (and each Markdown-sourced page if `pages: true`), it reads the original source from disk, strips the frontmatter, optionally renders Liquid against the document context, and writes a `.md` file directly into `_site/`.
+The plugin registers a `:site, :post_write` hook that runs after Jekyll has finished its main build. For each document in the configured collections (and each eligible page if `pages: true`), it reads the original source from disk, strips the frontmatter, optionally renders Liquid against the document context, optionally converts HTML source to Markdown, and writes a `.md` file directly into `_site/`.
 
 Because output goes through `File.write` rather than Jekyll's renderer, the file never passes through layouts, the Markdown-to-HTML converter, or any other plugin's hooks. The body stays as Markdown; Liquid (`{{ site.url }}`, `{% include %}`) resolves against the live site context.
 
@@ -137,7 +147,9 @@ Cloudflare Pages, Netlify, Vercel, and self-hosted builds run the plugin without
 
 **Why not just convert the rendered HTML back to Markdown?**
 
-The HTML has already gone through layouts, includes, theme chrome, syntax highlighting wrappers, and possibly a markdown converter that drops information (smart quotes, ID anchors). Round-tripping is lossy. Reading the source is faithful.
+Converting rendered HTML would pull in layouts, theme chrome, syntax highlighting
+wrappers, and scripts. The optional HTML path converts the original source body
+instead. Markdown sources are always read directly and are never round-tripped.
 
 **Will it slow my build down?**
 

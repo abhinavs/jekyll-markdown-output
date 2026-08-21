@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add opt-in `html_to_markdown` conversion for `.html` and `.htm` source pages.
+
 ## 0.1.1 - 2026-05-05
 
 - Fix: when a post had no `summary` set, the fallback to `doc.data["excerpt"]`

@@ -241,5 +241,31 @@ RSpec.describe Jekyll::MarkdownOutput::MarkdownPage do
       expect(out.encoding).to eq(Encoding::UTF_8)
       expect(out).to include("Noël ☃")
     end
+
+    it "converts rendered HTML source to GitHub-flavored Markdown when enabled" do
+      d = make_doc(
+        url: "/contact.html",
+        data: { "title" => "Contact" },
+        source_rel: "contact.HTML",
+        source_body: "---\ntitle: Contact\n---\n\n<p>Hello <strong>world</strong>.</p>\n<pre><code>puts 'hi'</code></pre>",
+      )
+      options = default_options.merge("html_to_markdown" => true)
+      out = described_class.new(site_double, d, options).to_s
+
+      expect(out).to include("Hello **world**.")
+      expect(out).to include("```\nputs 'hi'\n```")
+      expect(out).not_to include("<p>")
+    end
+
+    it "leaves HTML source unchanged when conversion is disabled" do
+      d = make_doc(
+        url: "/contact.html",
+        source_rel: "contact.htm",
+        source_body: "<p>Hello <strong>world</strong>.</p>",
+      )
+      out = described_class.new(site_double, d, default_options.merge("html_to_markdown" => false)).to_s
+
+      expect(out).to include("<p>Hello <strong>world</strong>.</p>")
+    end
   end
 end

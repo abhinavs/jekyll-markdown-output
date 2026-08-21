@@ -27,6 +27,8 @@ RSpec.describe "Jekyll site build with jekyll-markdown-output" do
   it "does not mirror HTML-sourced pages" do
     expect(dest.join("contact.html")).to exist
     expect(dest.join("contact.md")).not_to exist
+    expect(dest.join("terms.htm")).to exist
+    expect(dest.join("terms.md")).not_to exist
   end
 
   it "renders Liquid in the body by default" do
@@ -98,6 +100,19 @@ RSpec.describe "Configuration overrides" do
     _, dest = build_site("markdown_output" => { "enabled" => true, "extension" => ".txt" })
     expect(dest.join("greetings/2024/01/01/hello.txt")).to exist
     expect(dest.join("greetings/2024/01/01/hello.md")).not_to exist
+  ensure
+    FileUtils.rm_rf(dest) if dest
+  end
+
+  it "converts .html and .htm source pages to Markdown when enabled" do
+    _, dest = build_site("markdown_output" => { "enabled" => true, "html_to_markdown" => true })
+
+    contact = read_dest(dest, "contact.md")
+    expect(contact).to include("This page is **HTML**, not Markdown.")
+    expect(contact).to include("[support](https://example.com/support)")
+    expect(contact).not_to include("{{ site.url }}")
+    expect(contact).not_to include("<p>")
+    expect(read_dest(dest, "terms.md")).to include("Terms and **conditions**.")
   ensure
     FileUtils.rm_rf(dest) if dest
   end

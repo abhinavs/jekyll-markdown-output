@@ -42,7 +42,7 @@ module Jekyll
         if @options.fetch("include_title_heading", true) && @doc.data["title"]
           parts << "# #{@doc.data["title"]}"
         end
-        parts << rendered_source.to_s.strip
+        parts << output_body.to_s.strip
         "#{parts.join("\n\n")}\n"
       end
 
@@ -130,6 +130,19 @@ module Jekyll
         rel = @doc.respond_to?(:relative_path) ? @doc.relative_path : @doc.path
         Jekyll.logger.warn("MarkdownOutput:", "render failed for #{rel}: #{e.message}")
         source_body
+      end
+
+      def output_body
+        body = rendered_source
+        return body unless @options["html_to_markdown"] && html_source?
+
+        # Preserve the source's inline spacing instead of adding a space at
+        # every tag boundary (for example, before punctuation after </strong>).
+        ReverseMarkdown.convert(body, github_flavored: true, tag_border: "")
+      end
+
+      def html_source?
+        %w[.html .htm].include?(File.extname(source_path).downcase)
       end
     end
   end

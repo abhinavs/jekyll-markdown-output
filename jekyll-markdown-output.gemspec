@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "jekyll", ">= 3.7", "< 5.0"
+  spec.add_runtime_dependency "reverse_markdown", "~> 3.0"
 
   spec.add_development_dependency "kramdown-parser-gfm", "~> 1.1"
   spec.add_development_dependency "rake", "~> 13.0"

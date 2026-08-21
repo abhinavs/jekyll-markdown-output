@@ -10,13 +10,19 @@ module Jekyll
       "pages"                 => true,
       "page_extensions"       => [".md", ".markdown"],
       "html_to_markdown"      => false,
+      "html_to_markdown_options" => MarkdownPage::DEFAULT_HTML_TO_MARKDOWN_OPTIONS,
       "extension"             => ".md",
       "include_title_heading" => true,
       "frontmatter_keys"      => MarkdownPage::DEFAULT_FRONTMATTER_KEYS,
     }.freeze
 
     def self.config_for(site)
-      DEFAULTS.merge(site.config["markdown_output"] || {})
+      overrides = site.config["markdown_output"] || {}
+      config = DEFAULTS.merge(overrides)
+      config["html_to_markdown_options"] = DEFAULTS["html_to_markdown_options"].merge(
+        overrides["html_to_markdown_options"] || {}
+      )
+      config
     end
 
     def self.write_all(site)

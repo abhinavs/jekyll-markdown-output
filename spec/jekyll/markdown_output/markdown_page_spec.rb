@@ -280,5 +280,21 @@ RSpec.describe Jekyll::MarkdownOutput::MarkdownPage do
 
       expect(out).to include("<p>Hello <strong>world</strong>.</p>")
     end
+
+    it "passes configured conversion options to reverse_markdown" do
+      d = make_doc(
+        url: "/custom.html",
+        source_rel: "custom.html",
+        source_body: "<custom-element>Hello <strong>world</strong>.</custom-element>",
+      )
+      options = default_options.merge(
+        "html_to_markdown" => true,
+        "html_to_markdown_options" => { "unknown_tags" => "bypass" },
+      )
+      out = described_class.new(site_double, d, options).to_s
+
+      expect(out).to include("Hello **world**.")
+      expect(out).not_to include("custom-element")
+    end
   end
 end

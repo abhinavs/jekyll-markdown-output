@@ -10,6 +10,11 @@ RSpec.describe Jekyll::MarkdownOutput do
       expect(config["pages"]).to eq(true)
       expect(config["page_extensions"]).to eq([".md", ".markdown"])
       expect(config["html_to_markdown"]).to eq(false)
+      expect(config["html_to_markdown_options"]).to eq(
+        "unknown_tags"    => "pass_through",
+        "github_flavored" => true,
+        "tag_border"      => "",
+      )
       expect(config["extension"]).to eq(".md")
       expect(config["include_title_heading"]).to eq(true)
     end
@@ -28,6 +33,20 @@ RSpec.describe Jekyll::MarkdownOutput do
       expect(config["frontmatter_keys"]).to eq(%w[title url])
       # Untouched keys keep defaults.
       expect(config["pages"]).to eq(true)
+    end
+
+    it "merges partial HTML conversion options with their defaults" do
+      site = instance_double(Jekyll::Site, config: {
+        "markdown_output" => {
+          "html_to_markdown_options" => { "unknown_tags" => "bypass" },
+        },
+      })
+
+      expect(described_class.config_for(site)["html_to_markdown_options"]).to eq(
+        "unknown_tags"    => "bypass",
+        "github_flavored" => true,
+        "tag_border"      => "",
+      )
     end
   end
 

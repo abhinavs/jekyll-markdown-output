@@ -56,6 +56,10 @@ markdown_output:
   pages: true                        # also mirror site.pages
   page_extensions: [.md, .markdown]  # which page sources count as Markdown
   html_to_markdown: false            # also convert .html/.htm page sources
+  html_to_markdown_options:
+    unknown_tags: pass_through       # pass_through, bypass, drop, or raise
+    github_flavored: true            # fenced code blocks and other GFM support
+    tag_border: ""                    # spacing inserted at HTML tag boundaries
   extension: .md                     # output extension
   include_title_heading: true        # prepend "# Title" to body
   frontmatter_keys:                  # which fields to include
@@ -78,6 +82,21 @@ Liquid rendering, but before the generated frontmatter and optional title
 heading are added. It does not convert the rendered layout, so theme chrome is
 not pulled into the Markdown output. Conversion is necessarily lossy for HTML
 that has no Markdown equivalent.
+
+The `html_to_markdown_options` map is passed to `reverse_markdown`. To remove
+unsupported HTML tags while retaining and converting their contents, use:
+
+```yaml
+markdown_output:
+  html_to_markdown: true
+  html_to_markdown_options:
+    unknown_tags: bypass
+```
+
+Use `unknown_tags: drop` to remove unsupported elements together with their
+contents, or `unknown_tags: raise` to find unsupported elements during a build.
+The default, `pass_through`, preserves unsupported HTML verbatim. Partial option
+maps are merged with the defaults shown above.
 
 ### Per-document opt-out
 

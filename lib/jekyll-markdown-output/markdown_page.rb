@@ -8,6 +8,11 @@ module Jekyll
     # cannot touch the output.
     class MarkdownPage
       DEFAULT_FRONTMATTER_KEYS = %w[title date url summary tags category author].freeze
+      DEFAULT_HTML_TO_MARKDOWN_OPTIONS = {
+        "unknown_tags"    => "pass_through",
+        "github_flavored" => true,
+        "tag_border"      => "",
+      }.freeze
 
       attr_reader :doc, :site, :options
 
@@ -144,11 +149,18 @@ module Jekyll
 
         # Preserve the source's inline spacing instead of adding a space at
         # every tag boundary (for example, before punctuation after </strong>).
-        ReverseMarkdown.convert(body, github_flavored: true, tag_border: "")
+        ReverseMarkdown.convert(body, html_to_markdown_options)
       end
 
       def html_source?
         %w[.html .htm].include?(File.extname(source_path).downcase)
+      end
+
+      def html_to_markdown_options
+        configured = @options["html_to_markdown_options"] || {}
+        DEFAULT_HTML_TO_MARKDOWN_OPTIONS.merge(configured).each_with_object({}) do |(key, value), result|
+          result[key.to_sym] = value
+        end
       end
     end
   end

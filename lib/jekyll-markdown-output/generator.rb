@@ -50,6 +50,8 @@ module Jekyll
       return false if source.data["markdown_output"] == false
 
       page = MarkdownPage.new(site, source, config)
+      return false unless page.source_file?
+
       path = page.destination
       FileUtils.mkdir_p(File.dirname(path))
       File.write(path, page.to_s)

@@ -30,4 +30,16 @@ RSpec.describe Jekyll::MarkdownOutput do
       expect(config["pages"]).to eq(true)
     end
   end
+
+  describe ".write_one" do
+    it "skips generated pages that have no source file on disk" do
+      source_dir = Dir.mktmpdir("jmo-generated-page-")
+      site = instance_double(Jekyll::Site, source: source_dir)
+      page = instance_double(Jekyll::Page, data: {}, path: "redirect.html")
+
+      expect(described_class.write_one(site, page, described_class::DEFAULTS)).to eq(false)
+    ensure
+      FileUtils.rm_rf(source_dir) if source_dir
+    end
+  end
 end

@@ -22,6 +22,12 @@ module Jekyll
         File.join(@site.dest, relative_destination)
       end
 
+      # Generated pages from plugins such as jekyll-redirect-from can appear
+      # in site.pages without a corresponding source file on disk.
+      def source_file?
+        File.file?(source_path)
+      end
+
       # Path relative to the site root, e.g. "/foo.md".
       def relative_destination
         ext = @options.fetch("extension", ".md")

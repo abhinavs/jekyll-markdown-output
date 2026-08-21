@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Add opt-in `html_to_markdown` conversion for `.html` and `.htm` source pages.
+- Skip generated pages that do not have a source file, including redirects made
+  by `jekyll-redirect-from`.
 
 ## 0.1.1 - 2026-05-05
 

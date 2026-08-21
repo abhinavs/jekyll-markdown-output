@@ -77,6 +77,19 @@ RSpec.describe Jekyll::MarkdownOutput::MarkdownPage do
     end
   end
 
+  describe "#source_file?" do
+    it "returns true for a disk-backed source" do
+      page = described_class.new(site_double, make_doc(url: "/foo"), default_options)
+      expect(page.source_file?).to eq(true)
+    end
+
+    it "returns false for a generated page without a source file" do
+      doc = instance_double("Jekyll::Page", path: "redirect.html")
+      page = described_class.new(site_double, doc, default_options)
+      expect(page.source_file?).to eq(false)
+    end
+  end
+
   describe "frontmatter generation" do
     it "includes title, url, summary, tags, category, author when set" do
       d = make_doc(url: "/foo", data: {

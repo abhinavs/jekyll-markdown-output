@@ -297,11 +297,14 @@ RSpec.describe Jekyll::MarkdownOutput::MarkdownPage do
       expect(out).not_to include("custom-element")
     end
 
-    it "uses an SVG aria-label as text when enabled" do
+    it "uses SVG and i aria-labels as text when enabled" do
       d = make_doc(
         url: "/features.html",
         source_rel: "features.html",
-        source_body: '<p><a href="/plans"><svg aria-label="Included"><path d="M0 0" /></svg></a></p>',
+        source_body: <<~HTML,
+          <p><a href="/plans"><svg aria-label="Included"><path d="M0 0" /></svg></a></p>
+          <p><i class="status" aria-label="Unavailable"></i></p>
+        HTML
       )
       options = default_options.merge(
         "html_to_markdown" => true,
@@ -311,14 +314,16 @@ RSpec.describe Jekyll::MarkdownOutput::MarkdownPage do
       out = described_class.new(site_double, d, options).to_s
 
       expect(out).to include("[Included](/plans)")
+      expect(out).to include("Unavailable")
       expect(out).not_to include("<svg")
+      expect(out).not_to include("<i")
     end
 
     it "does not expose aria-labels from non-SVG elements" do
       d = make_doc(
         url: "/features.html",
         source_rel: "features.html",
-        source_body: '<span aria-label="Not included"></span><svg aria-label="Included"></svg>',
+        source_body: '<span aria-label="Not included"></span><i aria-label="Included"></i>',
       )
       options = default_options.merge(
         "html_to_markdown" => true,

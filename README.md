@@ -56,7 +56,7 @@ markdown_output:
   pages: true                        # also mirror site.pages
   page_extensions: [.md, .markdown]  # which page sources count as Markdown
   html_to_markdown: false            # also convert .html/.htm page sources
-  include_aria_labels: false         # emit svg[aria-label] values as text
+  include_aria_labels: false         # emit aria-label text for svg/i icons
   html_to_markdown_options:
     unknown_tags: pass_through       # pass_through, bypass, drop, or raise
     github_flavored: true            # fenced code blocks and other GFM support
@@ -99,10 +99,10 @@ contents, or `unknown_tags: raise` to find unsupported elements during a build.
 The default, `pass_through`, preserves unsupported HTML verbatim. Partial option
 maps are merged with the defaults shown above.
 
-Set `include_aria_labels: true` to replace each `<svg aria-label="…">` icon
-with its accessible label before conversion. Only SVG elements are affected;
-ARIA labels on other elements are ignored. Surrounding elements are preserved,
-so a labeled SVG inside an HTML link becomes the link text in Markdown.
+Set `include_aria_labels: true` to replace each `<svg aria-label="…">` or
+`<i aria-label="…">` icon with its accessible label before conversion. ARIA
+labels on other elements are ignored. Surrounding elements are preserved, so a
+labeled icon inside an HTML link becomes the link text in Markdown.
 
 ### Per-document opt-out
 

@@ -147,7 +147,7 @@ module Jekyll
         body = rendered_source
         return body unless @options["html_to_markdown"] && html_source?
 
-        body = expose_svg_aria_labels(body) if @options["include_aria_labels"]
+        body = expose_icon_aria_labels(body) if @options["include_aria_labels"]
 
         # Preserve the source's inline spacing instead of adding a space at
         # every tag boundary (for example, before punctuation after </strong>).
@@ -165,16 +165,16 @@ module Jekyll
         end
       end
 
-      # reverse_markdown does not understand SVG. Replace labeled SVG icons
-      # with their accessible names while leaving surrounding elements (such
-      # as links and buttons) available to the normal conversion pipeline.
-      def expose_svg_aria_labels(body)
+      # Replace labeled SVG and <i> icons with their accessible names while
+      # leaving surrounding elements (such as links and buttons) available to
+      # the normal conversion pipeline.
+      def expose_icon_aria_labels(body)
         fragment = Nokogiri::HTML::DocumentFragment.parse(body)
-        fragment.css("svg[aria-label]").each do |svg|
-          label = svg["aria-label"].to_s.strip
+        fragment.css("svg[aria-label], i[aria-label]").each do |icon|
+          label = icon["aria-label"].to_s.strip
           next if label.empty?
 
-          svg.replace(Nokogiri::XML::Text.new(label, fragment.document))
+          icon.replace(Nokogiri::XML::Text.new(label, fragment.document))
         end
         fragment.to_html
       end

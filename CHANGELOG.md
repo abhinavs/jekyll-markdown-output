@@ -6,7 +6,7 @@
 - Skip generated pages that do not have a source file, including redirects made
   by `jekyll-redirect-from`.
 - Expose `reverse_markdown` settings through `html_to_markdown_options`.
-- Add optional text output for `aria-label` values on SVG elements.
+- Add optional text output for `aria-label` values on SVG and `<i>` elements.
 
 ## 0.1.1 - 2026-05-05
 

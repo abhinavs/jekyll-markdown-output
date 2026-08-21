@@ -11,6 +11,7 @@ module Jekyll
       "page_extensions"       => [".md", ".markdown"],
       "html_to_markdown"      => false,
       "html_to_markdown_options" => MarkdownPage::DEFAULT_HTML_TO_MARKDOWN_OPTIONS,
+      "include_aria_labels"   => false,
       "extension"             => ".md",
       "include_title_heading" => true,
       "frontmatter_keys"      => MarkdownPage::DEFAULT_FRONTMATTER_KEYS,

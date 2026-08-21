@@ -296,5 +296,55 @@ RSpec.describe Jekyll::MarkdownOutput::MarkdownPage do
       expect(out).to include("Hello **world**.")
       expect(out).not_to include("custom-element")
     end
+
+    it "uses an SVG aria-label as text when enabled" do
+      d = make_doc(
+        url: "/features.html",
+        source_rel: "features.html",
+        source_body: '<p><a href="/plans"><svg aria-label="Included"><path d="M0 0" /></svg></a></p>',
+      )
+      options = default_options.merge(
+        "html_to_markdown" => true,
+        "include_aria_labels" => true,
+        "html_to_markdown_options" => { "unknown_tags" => "bypass" },
+      )
+      out = described_class.new(site_double, d, options).to_s
+
+      expect(out).to include("[Included](/plans)")
+      expect(out).not_to include("<svg")
+    end
+
+    it "does not expose aria-labels from non-SVG elements" do
+      d = make_doc(
+        url: "/features.html",
+        source_rel: "features.html",
+        source_body: '<span aria-label="Not included"></span><svg aria-label="Included"></svg>',
+      )
+      options = default_options.merge(
+        "html_to_markdown" => true,
+        "include_aria_labels" => true,
+        "html_to_markdown_options" => { "unknown_tags" => "bypass" },
+      )
+      out = described_class.new(site_double, d, options).to_s
+
+      expect(out).to include("Included")
+      expect(out).not_to include("Not included")
+    end
+
+    it "ignores blank SVG aria-labels" do
+      d = make_doc(
+        url: "/features.html",
+        source_rel: "features.html",
+        source_body: '<p>Before<svg aria-label="  "></svg>after</p>',
+      )
+      options = default_options.merge(
+        "html_to_markdown" => true,
+        "include_aria_labels" => true,
+        "html_to_markdown_options" => { "unknown_tags" => "bypass" },
+      )
+      out = described_class.new(site_double, d, options).to_s
+
+      expect(out).to include("Beforeafter")
+    end
   end
 end

@@ -15,6 +15,7 @@ RSpec.describe Jekyll::MarkdownOutput do
         "github_flavored" => true,
         "tag_border"      => "",
       )
+      expect(config["include_aria_labels"]).to eq(false)
       expect(config["extension"]).to eq(".md")
       expect(config["include_title_heading"]).to eq(true)
     end
